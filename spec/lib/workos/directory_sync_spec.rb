@@ -1,6 +1,7 @@
 # frozen_string_literal: true
+# typed: false
 
-describe WorkOS::DirectorySync do
+describe WorkOSV2::DirectorySync do
   it_behaves_like 'client'
 
   describe '.list_directories' do
@@ -20,11 +21,32 @@ describe WorkOS::DirectorySync do
       end
     end
 
+    context 'with domain option' do
+      it 'forms the proper request to the API' do
+        request_args = [
+          '/directories?domain=foo-corp.com',
+          'Content-Type' => 'application/json'
+        ]
+
+        expected_request = Net::HTTP::Get.new(*request_args)
+
+        expect(Net::HTTP::Get).to receive(:new).with(*request_args).
+          and_return(expected_request)
+
+        VCR.use_cassette 'directory_sync/list_directories/with_domain' do
+          directories = described_class.list_directories(
+            domain: 'foo-corp.com',
+          )
+
+          expect(directories.data.size).to eq(1)
+        end
+      end
+    end
+
     context 'with search option' do
       it 'forms the proper request to the API' do
         request_args = [
-          '/directories?search=Testing&'\
-          'order=desc',
+          '/directories?search=Testing',
           'Content-Type' => 'application/json'
         ]
 
@@ -47,8 +69,7 @@ describe WorkOS::DirectorySync do
     context 'with the before option' do
       it 'forms the proper request to the API' do
         request_args = [
-          '/directories?before=directory_01FGCPNV312FHFRCX0BYWHVSE1&'\
-          'order=desc',
+          '/directories?before=directory_01FGCPNV312FHFRCX0BYWHVSE1',
           'Content-Type' => 'application/json'
         ]
 
@@ -70,8 +91,7 @@ describe WorkOS::DirectorySync do
     context 'with the after option' do
       it 'forms the proper request to the API' do
         request_args = [
-          '/directories?after=directory_01FGCPNV312FHFRCX0BYWHVSE1&'\
-          'order=desc',
+          '/directories?after=directory_01FGCPNV312FHFRCX0BYWHVSE1',
           'Content-Type' => 'application/json'
         ]
 
@@ -91,8 +111,7 @@ describe WorkOS::DirectorySync do
     context 'with the limit option' do
       it 'forms the proper request to the API' do
         request_args = [
-          '/directories?limit=2&'\
-          'order=desc',
+          '/directories?limit=2',
           'Content-Type' => 'application/json'
         ]
 
@@ -114,7 +133,7 @@ describe WorkOS::DirectorySync do
     context 'with valid id' do
       it 'deletes a directory' do
         VCR.use_cassette('directory_sync/delete_directory') do
-          response = WorkOS::DirectorySync.delete_directory(
+          response = WorkOSV2::DirectorySync.delete_directory(
             'directory_01F2T098SKN5PCTVSJ7CWP70N5',
           )
 
@@ -128,7 +147,7 @@ describe WorkOS::DirectorySync do
     context 'with a valid id' do
       it 'gets the directory details' do
         VCR.use_cassette('directory_sync/get_directory_with_valid_id') do
-          directory = WorkOS::DirectorySync.get_directory(
+          directory = WorkOSV2::DirectorySync.get_directory(
             id: 'directory_01FK17DWRHH7APAFXT5B52PV0W',
           )
 
@@ -146,9 +165,9 @@ describe WorkOS::DirectorySync do
       it 'raises an error' do
         VCR.use_cassette('directory_sync/get_directory_with_invalid_id') do
           expect do
-            WorkOS::DirectorySync.get_directory(id: 'invalid')
+            WorkOSV2::DirectorySync.get_directory(id: 'invalid')
           end.to raise_error(
-            WorkOS::NotFoundError,
+            WorkOSV2::APIError,
             "Status 404, Directory not found: 'invalid'. - request ID: ",
           )
         end
@@ -161,8 +180,8 @@ describe WorkOS::DirectorySync do
       it 'raises an error' do
         VCR.use_cassette('directory_sync/list_groups/with_no_options') do
           expect do
-            WorkOS::DirectorySync.list_groups
-          end.to raise_error(WorkOS::UnprocessableEntityError)
+            WorkOSV2::DirectorySync.list_groups
+          end.to raise_error(WorkOSV2::InvalidRequestError)
         end
       end
     end
@@ -170,8 +189,7 @@ describe WorkOS::DirectorySync do
     context 'with directory option' do
       it 'forms the proper request to the API' do
         request_args = [
-          '/directory_groups?directory=directory_01G2Z8ADK5NPMVTWF48MVVE4HT&'\
-          'order=desc',
+          '/directory_groups?directory=directory_01G2Z8ADK5NPMVTWF48MVVE4HT',
           'Content-Type' => 'application/json'
         ]
 
@@ -194,8 +212,7 @@ describe WorkOS::DirectorySync do
     context 'with user option' do
       it 'forms the proper request to the API' do
         request_args = [
-          '/directory_groups?user=directory_user_01G2Z8D4FDB28ZNSRRBVCF2E0P&'\
-          'order=desc',
+          '/directory_groups?user=directory_user_01G2Z8D4FDB28ZNSRRBVCF2E0P',
           'Content-Type' => 'application/json'
         ]
 
@@ -218,8 +235,7 @@ describe WorkOS::DirectorySync do
       it 'forms the proper request to the API' do
         request_args = [
           '/directory_groups?before=directory_group_01G2Z8D4ZR8RJ03Y1W7P9K8NMG&' \
-          'directory=directory_01G2Z8ADK5NPMVTWF48MVVE4HT&'\
-          'order=desc',
+          'directory=directory_01G2Z8ADK5NPMVTWF48MVVE4HT',
           'Content-Type' => 'application/json'
         ]
 
@@ -243,8 +259,7 @@ describe WorkOS::DirectorySync do
       it 'forms the proper request to the API' do
         request_args = [
           '/directory_groups?after=directory_group_01G2Z8D4ZR8RJ03Y1W7P9K8NMG&' \
-          'directory=directory_01G2Z8ADK5NPMVTWF48MVVE4HT&'\
-          'order=desc',
+          'directory=directory_01G2Z8ADK5NPMVTWF48MVVE4HT',
           'Content-Type' => 'application/json'
         ]
 
@@ -268,8 +283,7 @@ describe WorkOS::DirectorySync do
       it 'forms the proper request to the API' do
         request_args = [
           '/directory_groups?limit=2&' \
-          'directory=directory_01G2Z8ADK5NPMVTWF48MVVE4HT&'\
-          'order=desc',
+          'directory=directory_01G2Z8ADK5NPMVTWF48MVVE4HT',
           'Content-Type' => 'application/json'
         ]
 
@@ -295,8 +309,8 @@ describe WorkOS::DirectorySync do
       it 'raises an error' do
         VCR.use_cassette('directory_sync/list_users/with_no_options') do
           expect do
-            WorkOS::DirectorySync.list_users
-          end.to raise_error(WorkOS::UnprocessableEntityError)
+            WorkOSV2::DirectorySync.list_users
+          end.to raise_error(WorkOSV2::InvalidRequestError)
         end
       end
     end
@@ -304,8 +318,7 @@ describe WorkOS::DirectorySync do
     context 'with directory option' do
       it 'forms the proper request to the API' do
         request_args = [
-          '/directory_users?directory=directory_01FAZYMST676QMTFN1DDJZZX87&'\
-          'order=desc',
+          '/directory_users?directory=directory_01FAZYMST676QMTFN1DDJZZX87',
           'Content-Type' => 'application/json'
         ]
 
@@ -328,8 +341,7 @@ describe WorkOS::DirectorySync do
     context 'with group option' do
       it 'forms the proper request to the API' do
         request_args = [
-          '/directory_users?group=directory_group_01FBXGP79EJAYKW0WS9JCK1V6E&'\
-          'order=desc',
+          '/directory_users?group=directory_group_01FBXGP79EJAYKW0WS9JCK1V6E',
           'Content-Type' => 'application/json'
         ]
 
@@ -352,8 +364,7 @@ describe WorkOS::DirectorySync do
       it 'forms the proper request to the API' do
         request_args = [
           '/directory_users?before=directory_user_01FAZYNPC8TJBP7Y2ERT51MGDF&'\
-          'directory=directory_01FAZYMST676QMTFN1DDJZZX87&'\
-          'order=desc',
+          'directory=directory_01FAZYMST676QMTFN1DDJZZX87',
           'Content-Type' => 'application/json'
         ]
 
@@ -377,8 +388,7 @@ describe WorkOS::DirectorySync do
       it 'forms the proper request to the API' do
         request_args = [
           '/directory_users?after=directory_user_01FAZYNPC8TJBP7Y2ERT51MGDF&' \
-          'directory=directory_01FAZYMST676QMTFN1DDJZZX87&'\
-          'order=desc',
+          'directory=directory_01FAZYMST676QMTFN1DDJZZX87',
           'Content-Type' => 'application/json'
         ]
 
@@ -402,8 +412,7 @@ describe WorkOS::DirectorySync do
       it 'forms the proper request to the API' do
         request_args = [
           '/directory_users?limit=2&' \
-          'directory=directory_01FAZYMST676QMTFN1DDJZZX87&'\
-          'order=desc',
+          'directory=directory_01FAZYMST676QMTFN1DDJZZX87',
           'Content-Type' => 'application/json'
         ]
 
@@ -428,7 +437,7 @@ describe WorkOS::DirectorySync do
     context 'with valid id' do
       it 'returns a group' do
         VCR.use_cassette('directory_sync/get_group') do
-          group = WorkOS::DirectorySync.get_group(
+          group = WorkOSV2::DirectorySync.get_group(
             'directory_group_01G2Z8D4ZR8RJ03Y1W7P9K8NMG',
           )
 
@@ -447,8 +456,8 @@ describe WorkOS::DirectorySync do
       it 'raises an error' do
         VCR.use_cassette('directory_sync/get_group_with_invalid_id') do
           expect do
-            WorkOS::DirectorySync.get_group('invalid')
-          end.to raise_error(WorkOS:: NotFoundError)
+            WorkOSV2::DirectorySync.get_group('invalid')
+          end.to raise_error(WorkOSV2::APIError)
         end
       end
     end
@@ -458,14 +467,14 @@ describe WorkOS::DirectorySync do
     context 'with valid id' do
       it 'returns a user' do
         VCR.use_cassette('directory_sync/get_user') do
-          user = WorkOS::DirectorySync.get_user(
+          user = WorkOSV2::DirectorySync.get_user(
             'directory_user_01FAZYNPC8M0HRYTKFP2GNX852',
           )
 
-          expect(user['first_name']).to eq('Bob')
+          expect(user['first_name']).to eq('Logan')
           expect(user.directory_id).to eq('directory_01FAZYMST676QMTFN1DDJZZX87')
           expect(user.organization_id).to eq('org_01FAZWCWR03DVWA83NCJYKKD54')
-          expect(user.first_name).to eq('Bob')
+          expect(user.first_name).to eq('Logan')
         end
       end
     end
@@ -474,8 +483,8 @@ describe WorkOS::DirectorySync do
       it 'raises an error' do
         VCR.use_cassette('directory_sync/get_user_with_invalid_id') do
           expect do
-            WorkOS::DirectorySync.get_user('invalid')
-          end.to raise_error(WorkOS::NotFoundError)
+            WorkOSV2::DirectorySync.get_user('invalid')
+          end.to raise_error(WorkOSV2::APIError)
         end
       end
     end

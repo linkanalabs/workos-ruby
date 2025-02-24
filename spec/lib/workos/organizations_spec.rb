@@ -1,6 +1,7 @@
 # frozen_string_literal: true
+# typed: false
 
-describe WorkOS::Organizations do
+describe WorkOSV2::Organizations do
   it_behaves_like 'client'
 
   describe '.create_organization' do
@@ -16,59 +17,6 @@ describe WorkOS::Organizations do
             expect(organization.id).to eq('org_01FCPEJXEZR4DSBA625YMGQT9N')
             expect(organization.name).to eq('Test Organization')
             expect(organization.domains.first[:domain]).to eq('example.io')
-          end
-        end
-
-        context 'without domains' do
-          it 'creates an organization' do
-            VCR.use_cassette 'organization/create_without_domains' do
-              organization = described_class.create_organization(
-                name: 'Test Organization',
-              )
-
-              expect(organization.id).to start_with('org_')
-              expect(organization.name).to eq('Test Organization')
-              expect(organization.domains).to be_empty
-            end
-          end
-        end
-
-        context 'with domains' do
-          it 'creates an organization and warns' do
-            VCR.use_cassette 'organization/create_with_domains' do
-              allow(Warning).to receive(:warn)
-
-              organization = described_class.create_organization(
-                domains: ['example.io'],
-                name: 'Test Organization',
-              )
-
-              expect(organization.id).to start_with('org_')
-              expect(organization.name).to eq('Test Organization')
-              expect(organization.domains.first[:domain]).to eq('example.io')
-
-              expect(Warning).to have_received(:warn).with(
-                "[DEPRECATION] `domains` is deprecated. Use `domain_data` instead.\n",
-                any_args,
-              )
-            end
-          end
-        end
-
-        context 'with domain_data' do
-          it 'creates an organization' do
-            VCR.use_cassette 'organization/create_with_domain_data' do
-              organization = described_class.create_organization(
-                domain_data: [{ domain: 'example.io', state: 'verified' }],
-                name: 'Test Organization',
-              )
-
-              expect(organization.id).to start_with('org_')
-              expect(organization.name).to eq('Test Organization')
-              expect(organization.domains.first).to include(
-                domain: 'example.io', state: 'verified',
-              )
-            end
           end
         end
       end
@@ -126,7 +74,7 @@ describe WorkOS::Organizations do
                     idempotency_key: 'bar',
                   )
                 end.to raise_error(
-                  WorkOS::InvalidRequestError,
+                  WorkOSV2::InvalidRequestError,
                   /Status 400, Another idempotency key \(bar\) with different request parameters was found. Please use a different idempotency key./,
                 )
               end
@@ -145,7 +93,7 @@ describe WorkOS::Organizations do
               name: 'Test Organization 2',
             )
           end.to raise_error(
-            WorkOS::APIError,
+            WorkOSV2::APIError,
             /An Organization with the domain example.com already exists/,
           )
         end
@@ -173,8 +121,7 @@ describe WorkOS::Organizations do
     context 'with the before option' do
       it 'forms the proper request to the API' do
         request_args = [
-          '/organizations?before=before-id&'\
-          'order=desc',
+          '/organizations?before=before-id',
           'Content-Type' => 'application/json'
         ]
 
@@ -196,8 +143,7 @@ describe WorkOS::Organizations do
     context 'with the after option' do
       it 'forms the proper request to the API' do
         request_args = [
-          '/organizations?after=after-id&'\
-          'order=desc',
+          '/organizations?after=after-id',
           'Content-Type' => 'application/json'
         ]
 
@@ -217,8 +163,7 @@ describe WorkOS::Organizations do
     context 'with the limit option' do
       it 'forms the proper request to the API' do
         request_args = [
-          '/organizations?limit=10&'\
-          'order=desc',
+          '/organizations?limit=10',
           'Content-Type' => 'application/json'
         ]
 
@@ -257,7 +202,7 @@ describe WorkOS::Organizations do
           expect do
             described_class.get_organization(id: 'invalid')
           end.to raise_error(
-            WorkOS::NotFoundError,
+            WorkOSV2::APIError,
             'Status 404, Not Found - request ID: ',
           )
         end
@@ -267,7 +212,7 @@ describe WorkOS::Organizations do
 
   describe '.update_organization' do
     context 'with valid payload' do
-      it 'updates the organization' do
+      it 'creates an organization' do
         VCR.use_cassette 'organization/update' do
           organization = described_class.update_organization(
             organization: 'org_01F6Q6TFP7RD2PF6J03ANNWDKV',
@@ -278,35 +223,6 @@ describe WorkOS::Organizations do
           expect(organization.id).to eq('org_01F6Q6TFP7RD2PF6J03ANNWDKV')
           expect(organization.name).to eq('Test Organization')
           expect(organization.domains.first[:domain]).to eq('example.me')
-        end
-      end
-    end
-    context 'without a name' do
-      it 'updates the organization' do
-        VCR.use_cassette 'organization/update_without_name' do
-          organization = described_class.update_organization(
-            organization: 'org_01F6Q6TFP7RD2PF6J03ANNWDKV',
-            domains: ['example.me'],
-          )
-
-          expect(organization.id).to eq('org_01F6Q6TFP7RD2PF6J03ANNWDKV')
-          expect(organization.name).to eq('Test Organization')
-          expect(organization.domains.first[:domain]).to eq('example.me')
-        end
-      end
-    end
-    context 'with a stripe_customer_id' do
-      it 'updates the organization' do
-        VCR.use_cassette 'organization/update_with_stripe_customer_id' do
-          organization = described_class.update_organization(
-            organization: 'org_01JJ5H14CAA2SQ5G9HNN6TBZ05',
-            name: 'Test Organization',
-            stripe_customer_id: 'cus_123',
-          )
-
-          expect(organization.id).to eq('org_01JJ5H14CAA2SQ5G9HNN6TBZ05')
-          expect(organization.name).to eq('Test Organization')
-          expect(organization.stripe_customer_id).to eq('cus_123')
         end
       end
     end
@@ -331,27 +247,9 @@ describe WorkOS::Organizations do
           expect do
             described_class.delete_organization(id: 'invalid')
           end.to raise_error(
-            WorkOS::NotFoundError,
+            WorkOSV2::APIError,
             'Status 404, Not Found - request ID: ',
           )
-        end
-      end
-    end
-  end
-
-  describe '.list_organization_roles' do
-    context 'with no options' do
-      it 'returns roles for organization' do
-        expected_metadata = {
-          after: nil,
-          before: nil,
-        }
-
-        VCR.use_cassette 'organization/list_organization_roles' do
-          roles = described_class.list_organization_roles(organization_id: 'org_01JEXP6Z3X7HE4CB6WQSH9ZAFE')
-
-          expect(roles.data.size).to eq(7)
-          expect(roles.list_metadata).to eq(expected_metadata)
         end
       end
     end

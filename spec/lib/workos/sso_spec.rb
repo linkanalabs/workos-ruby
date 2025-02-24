@@ -1,8 +1,9 @@
 # frozen_string_literal: true
+# typed: false
 
 require 'securerandom'
 
-describe WorkOS::SSO do
+describe WorkOSV2::SSO do
   it_behaves_like 'client'
 
   describe '.authorization_url' do
@@ -25,7 +26,7 @@ describe WorkOS::SSO do
       it 'returns the expected hostname' do
         authorization_url = described_class.authorization_url(**args)
 
-        expect(URI.parse(authorization_url).host).to eq(WorkOS.config.api_hostname)
+        expect(URI.parse(authorization_url).host).to eq(WorkOSV2::API_HOSTNAME)
       end
 
       it 'returns the expected query string' do
@@ -59,7 +60,7 @@ describe WorkOS::SSO do
       it 'returns the expected hostname' do
         authorization_url = described_class.authorization_url(**args)
 
-        expect(URI.parse(authorization_url).host).to eq(WorkOS.config.api_hostname)
+        expect(URI.parse(authorization_url).host).to eq(WorkOSV2::API_HOSTNAME)
       end
 
       it 'returns the expected query string' do
@@ -93,7 +94,7 @@ describe WorkOS::SSO do
       it 'returns the expected hostname' do
         authorization_url = described_class.authorization_url(**args)
 
-        expect(URI.parse(authorization_url).host).to eq(WorkOS.config.api_hostname)
+        expect(URI.parse(authorization_url).host).to eq(WorkOSV2::API_HOSTNAME)
       end
 
       it 'returns the expected query string' do
@@ -127,7 +128,7 @@ describe WorkOS::SSO do
       it 'returns the expected hostname' do
         authorization_url = described_class.authorization_url(**args)
 
-        expect(URI.parse(authorization_url).host).to eq(WorkOS.config.api_hostname)
+        expect(URI.parse(authorization_url).host).to eq(WorkOSV2::API_HOSTNAME)
       end
 
       it 'returns the expected query string' do
@@ -162,7 +163,7 @@ describe WorkOS::SSO do
       it 'returns the expected hostname' do
         authorization_url = described_class.authorization_url(**args)
 
-        expect(URI.parse(authorization_url).host).to eq(WorkOS.config.api_hostname)
+        expect(URI.parse(authorization_url).host).to eq(WorkOSV2::API_HOSTNAME)
       end
 
       it 'returns the expected query string' do
@@ -197,7 +198,7 @@ describe WorkOS::SSO do
       it 'returns the expected hostname' do
         authorization_url = described_class.authorization_url(**args)
 
-        expect(URI.parse(authorization_url).host).to eq(WorkOS.config.api_hostname)
+        expect(URI.parse(authorization_url).host).to eq(WorkOSV2::API_HOSTNAME)
       end
 
       it 'returns the expected query string' do
@@ -231,7 +232,7 @@ describe WorkOS::SSO do
       it 'returns the expected hostname' do
         authorization_url = described_class.authorization_url(**args)
 
-        expect(URI.parse(authorization_url).host).to eq(WorkOS.config.api_hostname)
+        expect(URI.parse(authorization_url).host).to eq(WorkOSV2::API_HOSTNAME)
       end
 
       it 'returns the expected query string' do
@@ -281,8 +282,7 @@ describe WorkOS::SSO do
           described_class.authorization_url(**args)
         end.to raise_error(
           ArgumentError,
-          'Okta is not a valid value. `provider` must be in ' \
-          '["AppleOAuth", "GitHubOAuth", "GoogleOAuth", "MicrosoftOAuth"]',
+          'Okta is not a valid value. `provider` must be in ["GoogleOAuth", "MicrosoftOAuth"]',
         )
       end
     end
@@ -302,9 +302,6 @@ describe WorkOS::SSO do
           id: 'prof_01EEJTY9SZ1R350RB7B73SNBKF',
           idp_id: '116485463307139932699',
           last_name: 'Loblaw',
-          role: {
-            slug: 'member',
-          },
           groups: nil,
           organization_id: 'org_01FG53X8636WSNW2WEKB2C31ZB',
           raw_attributes: {
@@ -336,7 +333,7 @@ describe WorkOS::SSO do
     let(:request_body) do
       {
         client_id: args[:client_id],
-        client_secret: WorkOS.config.key,
+        client_secret: WorkOSV2.config.key,
         code: args[:code],
         grant_type: 'authorization_code',
       }
@@ -364,26 +361,23 @@ describe WorkOS::SSO do
           with(headers: headers, body: request_body)).to have_been_made
       end
 
-      it 'returns a WorkOS::ProfileAndToken' do
+      it 'returns a WorkOSV2::ProfileAndToken' do
         profile_and_token = described_class.profile_and_token(**args)
-        expect(profile_and_token).to be_a(WorkOS::ProfileAndToken)
+        expect(profile_and_token).to be_a(WorkOSV2::ProfileAndToken)
 
         expectation = {
           connection_id: 'conn_01EMH8WAK20T42N2NBMNBCYHAG',
           connection_type: 'OktaSAML',
           email: 'demo@workos-okta.com',
-          first_name: 'WorkOS',
+          first_name: 'WorkOSV2',
           id: 'prof_01DRA1XNSJDZ19A31F183ECQW5',
           idp_id: '00u1klkowm8EGah2H357',
           last_name: 'Demo',
-          role: {
-            slug: 'admin',
-          },
           groups: %w[Admins Developers],
           organization_id: 'org_01FG53X8636WSNW2WEKB2C31ZB',
           raw_attributes: {
             email: 'demo@workos-okta.com',
-            first_name: 'WorkOS',
+            first_name: 'WorkOSV2',
             id: 'prof_01DRA1XNSJDZ19A31F183ECQW5',
             idp_id: '00u1klkowm8EGah2H357',
             last_name: 'Demo',
@@ -411,7 +405,7 @@ describe WorkOS::SSO do
         expect do
           described_class.profile_and_token(**args)
         end.to raise_error(
-          WorkOS::APIError,
+          WorkOSV2::APIError,
           'error: some error, error_description: some error description - request ID: request-id',
         )
       end
@@ -435,7 +429,7 @@ describe WorkOS::SSO do
         expect do
           described_class.profile_and_token(**args)
         end.to raise_error(
-          WorkOS::APIError,
+          WorkOSV2::APIError,
           "error: invalid_grant, error_description: The code '01DVX3C5Z367SFHR8QNDMK7V24'" \
           ' has expired or is invalid. - request ID: request-id',
         )
@@ -463,8 +457,7 @@ describe WorkOS::SSO do
     context 'with connection_type option' do
       it 'forms the proper request to the API' do
         request_args = [
-          '/connections?connection_type=OktaSAML&'\
-          'order=desc',
+          '/connections?connection_type=OktaSAML',
           'Content-Type' => 'application/json'
         ]
 
@@ -487,8 +480,7 @@ describe WorkOS::SSO do
     context 'with domain option' do
       it 'forms the proper request to the API' do
         request_args = [
-          '/connections?domain=foo-corp.com&'\
-          'order=desc',
+          '/connections?domain=foo-corp.com',
           'Content-Type' => 'application/json'
         ]
 
@@ -510,8 +502,7 @@ describe WorkOS::SSO do
     context 'with organization_id option' do
       it 'forms the proper request to the API' do
         request_args = [
-          '/connections?organization_id=org_01F9293WD2PDEEV4Y625XPZVG7&'\
-          'order=desc',
+          '/connections?organization_id=org_01F9293WD2PDEEV4Y625XPZVG7',
           'Content-Type' => 'application/json'
         ]
 
@@ -536,8 +527,7 @@ describe WorkOS::SSO do
     context 'with limit option' do
       it 'forms the proper request to the API' do
         request_args = [
-          '/connections?limit=2&'\
-          'order=desc',
+          '/connections?limit=2',
           'Content-Type' => 'application/json'
         ]
 
@@ -559,8 +549,7 @@ describe WorkOS::SSO do
     context 'with before option' do
       it 'forms the proper request to the API' do
         request_args = [
-          '/connections?before=conn_01FA3WGCWPCCY1V2FGES2FDNP7&'\
-          'order=desc',
+          '/connections?before=conn_01FA3WGCWPCCY1V2FGES2FDNP7',
           'Content-Type' => 'application/json'
         ]
 
@@ -582,8 +571,7 @@ describe WorkOS::SSO do
     context 'with after option' do
       it 'forms the proper request to the API' do
         request_args = [
-          '/connections?after=conn_01FA3WGCWPCCY1V2FGES2FDNP7&'\
-          'order=desc',
+          '/connections?after=conn_01FA3WGCWPCCY1V2FGES2FDNP7',
           'Content-Type' => 'application/json'
         ]
 
@@ -607,7 +595,7 @@ describe WorkOS::SSO do
     context 'with a valid id' do
       it 'gets the connection details' do
         VCR.use_cassette('sso/get_connection_with_valid_id') do
-          connection = WorkOS::SSO.get_connection(
+          connection = WorkOSV2::SSO.get_connection(
             id: 'conn_01FA3WGCWPCCY1V2FGES2FDNP7',
           )
 
@@ -623,9 +611,9 @@ describe WorkOS::SSO do
       it 'raises an error' do
         VCR.use_cassette('sso/get_connection_with_invalid_id') do
           expect do
-            WorkOS::SSO.get_connection(id: 'invalid')
+            WorkOSV2::SSO.get_connection(id: 'invalid')
           end.to raise_error(
-            WorkOS::NotFoundError,
+            WorkOSV2::APIError,
             'Status 404, Not Found - request ID: ',
           )
         end
@@ -637,7 +625,7 @@ describe WorkOS::SSO do
     context 'with a valid id' do
       it 'returns true' do
         VCR.use_cassette('sso/delete_connection_with_valid_id') do
-          response = WorkOS::SSO.delete_connection(
+          response = WorkOSV2::SSO.delete_connection(
             id: 'conn_01EX55FRVN1V2PCA9YWTMZQMMQ',
           )
 
@@ -650,9 +638,9 @@ describe WorkOS::SSO do
       it 'returns false' do
         VCR.use_cassette('sso/delete_connection_with_invalid_id') do
           expect do
-            WorkOS::SSO.delete_connection(id: 'invalid')
+            WorkOSV2::SSO.delete_connection(id: 'invalid')
           end.to raise_error(
-            WorkOS::NotFoundError,
+            WorkOSV2::APIError,
             'Status 404, Not Found - request ID: ',
           )
         end

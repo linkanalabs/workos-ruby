@@ -15,7 +15,7 @@ http_interactions:
       Accept:
       - "*/*"
       User-Agent:
-      - WorkOS; ruby/2.6.5; x86_64-darwin19; v0.1.0
+      - WorkOSV2; ruby/2.6.5; x86_64-darwin19; v0.1.0
       Authorization:
       - Bearer <API_KEY>
       Idempotency-Key:
@@ -79,7 +79,7 @@ http_interactions:
       Accept:
       - "*/*"
       User-Agent:
-      - WorkOS; ruby/2.6.5; x86_64-darwin19; v0.1.0
+      - WorkOSV2; ruby/2.6.5; x86_64-darwin19; v0.1.0
       Authorization:
       - Bearer <API_KEY>
       Idempotency-Key:

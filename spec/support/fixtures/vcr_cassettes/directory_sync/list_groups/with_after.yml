@@ -2,7 +2,7 @@
 http_interactions:
 - request:
     method: get
-    uri: https://api.workos.com/directory_groups?after=directory_group_01G2Z8D4ZR8RJ03Y1W7P9K8NMG&directory=directory_01G2Z8ADK5NPMVTWF48MVVE4HT&order=desc
+    uri: https://api.workos.com/directory_groups?after=directory_group_01G2Z8D4ZR8RJ03Y1W7P9K8NMG&directory=directory_01G2Z8ADK5NPMVTWF48MVVE4HT
     body:
       encoding: US-ASCII
       string: ''
@@ -14,7 +14,7 @@ http_interactions:
       Accept:
       - "*/*"
       User-Agent:
-      - WorkOS; ruby/3.0.2; x86_64-darwin19; v2.1.1
+      - WorkOSV2; ruby/3.0.2; x86_64-darwin19; v2.1.1
       Authorization:
       - Bearer <API_KEY>
   response:

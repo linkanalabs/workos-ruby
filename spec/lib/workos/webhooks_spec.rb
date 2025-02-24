@@ -1,9 +1,10 @@
 # frozen_string_literal: true
+# typed: false
 
 require 'json'
 require 'openssl'
 
-describe WorkOS::Webhooks do
+describe WorkOSV2::Webhooks do
   before(:each) do
     @payload = File.read("#{SPEC_ROOT}/support/webhook_payload.txt")
     @secret = 'secret'
@@ -67,7 +68,7 @@ describe WorkOS::Webhooks do
   end
 
   # rubocop:disable Metrics/BlockLength
-  shared_examples 'WorkOS-Signature header failures' do
+  shared_examples 'WorkOSV2-Signature header failures' do
     context 'with an empty header' do
       it 'raises an error' do
         expect do
@@ -77,7 +78,7 @@ describe WorkOS::Webhooks do
             secret: @secret,
           )
         end.to raise_error(
-          WorkOS::SignatureVerificationError,
+          WorkOSV2::SignatureVerificationError,
           'Unable to extract timestamp and signature hash from header',
         )
       end
@@ -92,7 +93,7 @@ describe WorkOS::Webhooks do
             secret: @secret,
           )
         end.to raise_error(
-          WorkOS::SignatureVerificationError,
+          WorkOSV2::SignatureVerificationError,
           'No signature hash found with expected scheme v1',
         )
       end
@@ -107,7 +108,7 @@ describe WorkOS::Webhooks do
             secret: @secret,
           )
         end.to raise_error(
-          WorkOS::SignatureVerificationError,
+          WorkOSV2::SignatureVerificationError,
           'Signature hash does not match the expected signature hash for payload',
         )
       end
@@ -122,7 +123,7 @@ describe WorkOS::Webhooks do
             secret: @secret,
           )
         end.to raise_error(
-          WorkOS::SignatureVerificationError,
+          WorkOSV2::SignatureVerificationError,
           'Signature hash does not match the expected signature hash for payload',
         )
       end
@@ -137,7 +138,7 @@ describe WorkOS::Webhooks do
             secret: 'invalid',
           )
         end.to raise_error(
-          WorkOS::SignatureVerificationError,
+          WorkOSV2::SignatureVerificationError,
           'Signature hash does not match the expected signature hash for payload',
         )
       end
@@ -152,7 +153,7 @@ describe WorkOS::Webhooks do
             secret: @secret,
           )
         end.to raise_error(
-          WorkOS::SignatureVerificationError,
+          WorkOSV2::SignatureVerificationError,
           'Timestamp outside the tolerance zone',
         )
       end
@@ -161,7 +162,7 @@ describe WorkOS::Webhooks do
   # rubocop:enable Metrics/BlockLength
 
   describe '.construct_event' do
-    it_behaves_like 'WorkOS-Signature header failures'
+    it_behaves_like 'WorkOSV2-Signature header failures'
 
     context 'with the correct payload, sig_header, and secret' do
       it 'returns a webhook event' do
@@ -194,7 +195,7 @@ describe WorkOS::Webhooks do
   end
 
   describe '.verify_header' do
-    it_behaves_like 'WorkOS-Signature header failures'
+    it_behaves_like 'WorkOSV2-Signature header failures'
 
     it 'returns true when the signature is valid' do
       described_class.verify_header(
@@ -206,7 +207,7 @@ describe WorkOS::Webhooks do
   end
 
   describe '.get_timestamp_and_signature_hash' do
-    it_behaves_like 'WorkOS-Signature header failures'
+    it_behaves_like 'WorkOSV2-Signature header failures'
 
     it 'returns the timestamp and signature when the signature is valid' do
       timestamp_int = @timestamp.to_i
@@ -219,7 +220,7 @@ describe WorkOS::Webhooks do
   end
 
   describe '.compute_signature' do
-    it_behaves_like 'WorkOS-Signature header failures'
+    it_behaves_like 'WorkOSV2-Signature header failures'
 
     it 'returns the computed signature' do
       timestamp_int = @timestamp.to_i

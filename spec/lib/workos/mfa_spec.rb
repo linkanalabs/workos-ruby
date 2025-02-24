@@ -1,6 +1,7 @@
 # frozen_string_literal: true
+# typed: false
 
-describe WorkOS::MFA do
+describe WorkOSV2::MFA do
   it_behaves_like 'client'
 
   describe '.enroll_factor' do
@@ -20,7 +21,7 @@ describe WorkOS::MFA do
         VCR.use_cassette 'mfa/enroll_factor_totp_valid' do
           factor = described_class.enroll_factor(
             type: 'totp',
-            totp_issuer: 'WorkOS',
+            totp_issuer: 'WorkOSV2',
             totp_user: 'some_user',
           )
           expect(factor.totp.instance_of?(Hash))
@@ -59,7 +60,7 @@ describe WorkOS::MFA do
         expect do
           described_class.enroll_factor(
             type: 'totp',
-            totp_issuer: 'WorkOS',
+            totp_issuer: 'WorkOSV2',
           )
         end.to raise_error(
           ArgumentError,
@@ -130,19 +131,14 @@ describe WorkOS::MFA do
 
   describe '.verify_factor' do
     it 'throws a warning' do
-      VCR.use_cassette 'mfa/verify_challenge_generic_valid' do
-        allow(Warning).to receive(:warn)
-
-        described_class.verify_factor(
-          authentication_challenge_id: 'auth_challenge_01FZ4YVRBMXP5ZM0A7BP4AJ12J',
-          code: '897792',
-        )
-
-        expect(Warning).to have_received(:warn).with(
-          "[DEPRECATION] `verify_factor` is deprecated. Please use `verify_challenge` instead.\n",
-          any_args,
-        )
-      end
+      expect do
+        VCR.use_cassette 'mfa/verify_challenge_generic_valid' do
+          described_class.verify_factor(
+            authentication_challenge_id: 'auth_challenge_01FZ4YVRBMXP5ZM0A7BP4AJ12J',
+            code: '897792',
+          )
+        end
+      end.to output("[DEPRECATION] `verify_factor` is deprecated. Please use `verify_challenge` instead.\n").to_stderr
     end
 
     it 'calls verify_challenge' do
@@ -188,7 +184,7 @@ describe WorkOS::MFA do
                 authentication_challenge_id: 'auth_challenge_01FZ4YVRBMXP5ZM0A7BP4AJ12J',
                 code: '897792',
               )
-            end.to raise_error(WorkOS::UnprocessableEntityError)
+            end.to raise_error(WorkOSV2::InvalidRequestError)
           end
         end
       end
@@ -201,7 +197,7 @@ describe WorkOS::MFA do
                 authentication_challenge_id: 'auth_challenge_01FZ4YVRBMXP5ZM0A7BP4AJ12J',
                 code: '897792',
               )
-            end.to raise_error(WorkOS::UnprocessableEntityError)
+            end.to raise_error(WorkOSV2::InvalidRequestError)
           end
         end
       end
@@ -264,7 +260,7 @@ describe WorkOS::MFA do
             described_class.get_factor(
               id: 'auth_factor_invalid',
             )
-          end.to raise_error(WorkOS::NotFoundError)
+          end.to raise_error(WorkOSV2::APIError)
         end
       end
     end

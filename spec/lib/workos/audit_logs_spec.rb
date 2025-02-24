@@ -1,10 +1,11 @@
 # frozen_string_literal: true
+# typed: false
 
-describe WorkOS::AuditLogs do
+describe WorkOSV2::AuditLogs do
   it_behaves_like 'client'
 
   before do
-    WorkOS.configure do |config|
+    WorkOSV2.configure do |config|
       config.key = 'example_api_key'
     end
   end
@@ -47,7 +48,7 @@ describe WorkOS::AuditLogs do
               idempotency_key: 'idempotency_key',
             )
 
-            expect(response.code).to eq '201'
+            expect(response).to eq T::Private::Types::Void::VOID
           end
         end
       end
@@ -60,7 +61,7 @@ describe WorkOS::AuditLogs do
               event: valid_event,
             )
 
-            expect(response.code).to eq '201'
+            expect(response).to eq T::Private::Types::Void::VOID
           end
         end
       end
@@ -72,7 +73,7 @@ describe WorkOS::AuditLogs do
               organization: 'org_123',
               event: valid_event,
             )
-          rescue WorkOS::InvalidRequestError => e
+          rescue WorkOSV2::InvalidRequestError => e
             expect(
               e.message,
             ).to eq 'Status 400, Invalid Audit Log event - request ID: 1cf9b8e7-5910-4a6d-a333-46bcf841422e'

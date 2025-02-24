@@ -14,7 +14,7 @@ http_interactions:
       Accept:
       - "*/*"
       User-Agent:
-      - WorkOS; ruby/3.0.1; x86_64-darwin19; v1.1.0
+      - WorkOSV2; ruby/3.0.1; x86_64-darwin19; v1.1.0
       Authorization:
       - Bearer <API_KEY>
   response:
